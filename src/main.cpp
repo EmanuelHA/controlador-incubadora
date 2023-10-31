@@ -5,8 +5,7 @@
 
 #include <Arduino.h>
 #include <PID_v1.h>
-#include <TinyI2CMaster.h>
-#define  TINY4KOLED_QUICK_BEGIN // Reduccion de espacio al ser una OLED blanca
+#include <Wire.h>
 #include <Tiny4kOLED.h>
 #include "ModernDos8.h"
 #include <AHT10.h>
@@ -32,7 +31,7 @@ AHT10 aht10Sensor = AHT10();    // Sensor de temperatura/humedad AHT10
 // Funciones
 void zeroCrossing();
 void updateDisplay();
-unsigned int customMap(unsigned int value, unsigned int from, unsigned int to);
+unsigned int map(unsigned int value, unsigned int from, unsigned int to);
 
 void setup() {
     pinMode(SSR, OUTPUT);
@@ -62,7 +61,7 @@ void loop() {
     }
     // Implementacion si no se cuenta con puente rectificador en el optoacoplador
     if (zcDetected) {
-        unsigned int ssrTriggerLapse = customMap(output, 255, AC_SEMICYCLE_uS);
+        unsigned int ssrTriggerLapse = static_cast <unsigned int> (output);
         digitalWrite(SSR, HIGH);
         delayMicroseconds(ssrTriggerLapse);
         digitalWrite(SSR, LOW);
@@ -93,8 +92,4 @@ void updateDisplay() {
     oled.setCursor(0, 0);
     oled.printf("TEMPERATURA: %f\n", input);
     // oled.switchFrame();
-}
-// Custom mapping con 0 como valor minimo (no funciona con datos negativos)
-unsigned int customMap(unsigned int value, unsigned int from, unsigned int to) {
-    return (value / from) * to;
 }
